@@ -1,0 +1,103 @@
+on System#Boot do
+  Monitor GPIO,12
+  Monitor GPIO,13
+endon
+
+on System#Boot do
+  LoopTimerSet,1,1
+endon
+
+on MQTT#Connected do
+  Event,evtResetTimers
+  if [Plugin#GPIO#Pinstate#12]=1 and [Plugin#GPIO#Pinstate#13]=0
+      AsyncEvent,evtOpen
+  elseif [Plugin#GPIO#Pinstate#12]=0 and [Plugin#GPIO#Pinstate#13]=1
+      AsyncEvent,evtClosed
+  else
+      AsyncEvent,evtUnknown
+  endif
+endon
+
+on MQTT#Disconnected do
+  Event,evtResetTimers
+  LoopTimerSet,1,1
+endon
+
+on listener#gateCmd do
+  if [listener#gateCmd]=1
+    Pulse,14,1,250
+  endif
+endon
+
+on GPIO#12=1 do
+  AsyncEvent,evtOpen
+endon
+
+on GPIO#12=0 do
+  AsyncEvent,evtMoveDown
+endon
+
+on GPIO#13=1 do
+  AsyncEvent,evtClosed
+endon
+
+on GPIO#13=0 do
+  AsyncEvent,evtMoveUp
+endon
+
+on evtMoveDown do
+  Event,evtResetTimers
+  GPIO,4,0
+  GPIO,5,0
+  Publish,%sysname%/brama/up,0
+  Publish,%sysname%/brama/status,"Move down"
+  LoopTimerSet,2,3
+endon
+
+on evtMoveUp do
+  Event,evtResetTimers
+  GPIO,4,0
+  GPIO,5,0
+  Publish,%sysname%/brama/down,0
+  Publish,%sysname%/brama/status,"Move up"
+  LoopTimerSet,2,3
+endon
+
+on evtClosed do
+  Event,evtResetTimers
+  Publish,%sysname%/brama/down,1
+  Publish,%sysname%/brama/status,"Closed"
+  GPIO,4,1
+  GPIO,5,0
+endon
+
+on evtOpen do
+  Event,evtResetTimers
+  Publish,%sysname%/brama/up,1
+  Publish,%sysname%/brama/status,"Open"
+  GPIO,4,0
+  GPIO,5,1
+endon
+
+on evtUnknown do
+  Event,evtResetTimers
+  GPIO,4,0
+  GPIO,5,0
+  Publish,%sysname%/brama/up,[Plugin#GPIO#Pinstate#12]
+  Publish,%sysname%/brama/down,[Plugin#GPIO#Pinstate#13]
+  Publish,%sysname%/brama/status,"Unknown"
+  LoopTimerSet,1,3
+endon
+
+on evtResetTimers do
+  LoopTimerSet,1,0
+  LoopTimerSet,2,0
+endon
+
+on Rules#Timer=1 do
+  Pulse,5,1,200
+endon
+
+on Rules#Timer=2 do
+  Pulse,4,1,200
+endon
