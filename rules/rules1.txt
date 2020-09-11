@@ -50,7 +50,7 @@ on evtMoveDown do
   GPIO,4,0
   GPIO,5,0
   Publish,%sysname%/brama/up,0
-  Publish,%sysname%/brama/status,"Move down"
+  Publish,%sysname%/brama/status,"Zamykanie"
   LoopTimerSet,2,3
 endon
 
@@ -59,14 +59,14 @@ on evtMoveUp do
   GPIO,4,0
   GPIO,5,0
   Publish,%sysname%/brama/down,0
-  Publish,%sysname%/brama/status,"Move up"
+  Publish,%sysname%/brama/status,"Otwieranie"
   LoopTimerSet,2,3
 endon
 
 on evtClosed do
   Event,evtResetTimers
   Publish,%sysname%/brama/down,1
-  Publish,%sysname%/brama/status,"Closed"
+  Publish,%sysname%/brama/status,"Zamknięta"
   GPIO,4,1
   GPIO,5,0
 endon
@@ -74,7 +74,7 @@ endon
 on evtOpen do
   Event,evtResetTimers
   Publish,%sysname%/brama/up,1
-  Publish,%sysname%/brama/status,"Open"
+  Publish,%sysname%/brama/status,"Otwarta"
   GPIO,4,0
   GPIO,5,1
 endon
@@ -85,7 +85,7 @@ on evtUnknown do
   GPIO,5,0
   Publish,%sysname%/brama/up,[Plugin#GPIO#Pinstate#12]
   Publish,%sysname%/brama/down,[Plugin#GPIO#Pinstate#13]
-  Publish,%sysname%/brama/status,"Unknown"
+  Publish,%sysname%/brama/status,"Nieznany"
   LoopTimerSet,1,3
 endon
 
